@@ -42,27 +42,60 @@ pub async fn client_connection(ws: WebSocket, id: String, clients: Clients, mut 
     println!("{} disconnected", id);
 }
 
+//handle a message from the client
 async fn client_msg(id: &str, msg: Message, clients: &Clients) {
+    //convert message to a string
     println!("received message from {}: {:?}", id, msg);
     let message = match msg.to_str() {
         Ok(v) => v,
         Err(_) => return,
     };
-    if message == "ping" || message == "ping\n" {
-        return;
-    }
-    let topics_req: TopicsRequest = match serde_json::from_str(&message) {
-        Ok(v) => v,
-        Err(e) => {
-            eprintln!("error while parsing message to topics request: {}", e);
-            return;
+
+    //split message by spaces
+    let split_msg: Vec<&str> = message.split(' ').collect();
+
+    //check the first word to check operand
+    match split_msg[0] {
+        "ADD" => {
+            if split_msg.len() == 2 {
+                add_topic(id, clients, split_msg[1]).await
+            }
         }
-    };
+        "TELL" => {
+            if split_msg.len() >= 3 {
+                broadcast_to_topic(
+                    clients,
+                    split_msg[1],
+                    &split_msg[2..]
+                        .iter()
+                        .map(|i| i.to_string())
+                        .collect::<String>(),
+                )
+                .await;
+            }
+        }
+        _ => println!("{} sent unknown operator {}", id, split_msg[0]),
+    }
+}
+
+async fn add_topic(id: &str, clients: &Clients, topic: &str) {
     let mut locked = clients.write().await;
     match locked.get_mut(id) {
         Some(v) => {
-            v.topics = topics_req.topics;
+            v.topics.push(topic.to_string());
         }
         None => return,
     };
+}
+
+async fn broadcast_to_topic(clients: &Clients, topic: &str, message: &str) {
+    let mut locked = clients.write().await;
+    locked
+        .iter_mut()
+        .filter(|(_, client)| client.topics.contains(&topic.to_string()))
+        .for_each(|(_, client)| {
+            if let Some(sender) = &client.sender {
+                let _ = sender.send(Ok(Message::text(message.to_string().clone())));
+            }
+        });
 }

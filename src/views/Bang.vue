@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Register />
+    <Register @wsGotten="establishWS" />
   </div>
 </template>
 
@@ -14,6 +14,18 @@ export default {
   props: {
   },
   methods: {
+    establishWS(url) {
+      const socket = new WebSocket("ws:/localhost:8000/ws/" + url);
+
+      console.log(url);
+      socket.addEventListener('open', function () {
+        socket.send('TELL bang! cool stuff!');
+      });
+
+      socket.addEventListener('message', function (event) {
+        console.log(event.data);
+      })
+    }
   },
   data() {
     return {

@@ -26,9 +26,11 @@ pub async fn register_handler(body: RegisterRequest, clients: Clients) -> Result
     let uuid = Uuid::new_v4().simple().to_string();
     register_client(uuid.clone(), user_id, clients).await;
 
+    println!("new client registered: {}", uuid);
+    
     //return this uuid in the form of a URL the client can use to communicate with the websocket
     Ok(json(&RegisterResponse {
-        url: format!("ws://127.0.0.1:8000/ws/{}", uuid),
+        url: format!("{}", uuid),
     }))
 }
 
@@ -38,7 +40,7 @@ async fn register_client(id: String, user_id: usize, clients: Clients) {
         id,
         Client {
             user_id,
-            topics: vec![String::from("cats")],
+            topics: vec![String::from("bang!")],
             sender: None,
         },
     );

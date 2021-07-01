@@ -4,7 +4,6 @@ use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock};
 use warp::{ws::Message, Filter, Rejection};
 
-
 type Result<T> = std::result::Result<T, Rejection>;
 type Clients = Arc<RwLock<HashMap<String, Client>>>;
 
@@ -23,10 +22,10 @@ async fn main() {
     let clients: Clients = Arc::new(RwLock::new(HashMap::new()));
 
     //route to check if service is up
-    let health_route = warp::path!("health").and_then(handler::health_handler);
+    let health_route = warp::path!("api" / "health").and_then(handler::health_handler);
 
     //route to register a new client
-    let register = warp::path("register");
+    let register = warp::path!("api" / "register");
     let register_routes = register
         .and(warp::post())
         .and(warp::body::json())
@@ -37,7 +36,7 @@ async fn main() {
             .and(warp::path::param())
             .and(with_clients(clients.clone()))
             .and_then(handler::unregister_handler));
-    
+
     let ws_route = warp::path("ws")
         .and(warp::ws())
         .and(warp::path::param())
