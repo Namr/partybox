@@ -1,40 +1,58 @@
 <template>
   <div>
-    <Register @wsGotten="establishWS" />
+    <template v-if="connected == false">
+      <Register @wsGotten="establishWS" />
+    </template>
+
+    <template v-else>
+      <template v-if="inRoom == false">
+        <p>Room Select</p>
+      </template>
+      
+      <template v-else>
+        <p>The game</p>
+      </template>
+    </template>
   </div>
 </template>
 
 <script>
-import Register from "../components/Register.vue"
+import Register from "../components/Register.vue";
 export default {
-  name: 'Bang',
+  name: "Bang",
   components: {
-    Register
+    Register,
   },
-  props: {
-  },
+  props: {},
   methods: {
+    bangStateMachine(event) {
+      console.log(event.data);
+    },
     establishWS(url) {
       const socket = new WebSocket("ws:/localhost:8000/ws/" + url);
 
-      console.log(url);
-      socket.addEventListener('open', function () {
-        socket.send('TELL bang! cool stuff!');
+      this.id = url;
+
+      socket.addEventListener("open", () => {
+        this.connected = true;
+        socket.send("BANG PLAY");
+        socket.send("BANG CREATE niceroom");
+        socket.send("BANG LISTROOMS");
       });
 
-      socket.addEventListener('message', function (event) {
-        console.log(event.data);
-      })
-    }
+      socket.addEventListener("message", this.bangStateMachine);
+    },
   },
   data() {
     return {
-    }
-  }
-}
+      id: String,
+      connected: false,
+      inRoom: false,
+    };
+  },
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-
 </style>

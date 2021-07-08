@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 use std::collections::HashMap;
 use std::convert::Infallible;
 use std::sync::Arc;
@@ -9,6 +12,7 @@ type Clients = Arc<RwLock<HashMap<String, Client>>>;
 
 mod handler;
 mod ws;
+mod bang;
 
 #[derive(Debug, Clone)]
 pub struct Client {
@@ -20,7 +24,7 @@ pub struct Client {
 #[tokio::main]
 async fn main() {
     let clients: Clients = Arc::new(RwLock::new(HashMap::new()));
-
+    
     //route to check if service is up
     let health_route = warp::path!("api" / "health").and_then(handler::health_handler);
 

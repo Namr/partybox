@@ -1,7 +1,6 @@
-use crate::{Client, Clients};
+use crate::{Client, Clients, bang};
 use futures::{FutureExt, StreamExt};
 use serde::Deserialize;
-use serde_json;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use warp::ws::{Message, WebSocket};
@@ -56,6 +55,7 @@ async fn client_msg(id: &str, msg: Message, clients: &Clients) {
 
     //check the first word to check operand
     match split_msg[0] {
+        //these operators work for every game so lets handle them here
         "ADD" => {
             if split_msg.len() == 2 {
                 add_topic(id, clients, split_msg[1]).await
@@ -73,7 +73,11 @@ async fn client_msg(id: &str, msg: Message, clients: &Clients) {
                 )
                 .await;
             }
-        }
+        },
+        //game specific messages, will be handled in an individual module
+        "BANG" => {
+            bang::bang_message_handler(id, &split_msg[1..], clients).await;
+        },
         _ => println!("{} sent unknown operator {}", id, split_msg[0]),
     }
 }
