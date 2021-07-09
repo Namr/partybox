@@ -1,4 +1,5 @@
 # partybox
+A small website that lets people play board games online, right now only supports "Bang!". Powered by Rust for the backend and uses Vue2 for the frontend. Makes extensive use of websockets.
 
 ## Project setup
 ```
