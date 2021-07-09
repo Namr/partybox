@@ -63,7 +63,7 @@ pub async fn bang_message_handler(id: &str, args: &[&str], clients: &Clients) {
                         client
                             .sender
                             .unwrap()
-                            .send(Ok(Message::text("The room requested does not exist")))
+                            .send(Ok(Message::text("RESPONSE ERROR The room requested does not exist")))
                             .unwrap();
                         return
                     }
@@ -83,16 +83,17 @@ pub async fn bang_message_handler(id: &str, args: &[&str], clients: &Clients) {
                             .sender
                             .unwrap()
                             .send(Ok(Message::text(
-                                "You must join the bang! game before joining/creating a room (send BANG PLAY via ws)",
+                                "RESPONSE ERROR You must join the bang! game before joining/creating a room (send BANG PLAY via ws)",
                             ))).unwrap();
                         return;
                     }
                 }
-
+                
+                //confirms that joining was successful
                 client
                     .sender
                     .unwrap()
-                    .send(Ok(Message::text("Sucessfully Joined Room")))
+                    .send(Ok(Message::text("RESPONSE JOIN")))
                     .unwrap();
             }
         }
@@ -122,17 +123,18 @@ pub async fn bang_message_handler(id: &str, args: &[&str], clients: &Clients) {
                             .sender
                             .unwrap()
                             .send(Ok(Message::text(
-                                "You must join the bang! game before joining/creating a room",
+                                "RESPONSE ERROR You must join the bang! game before joining/creating a room",
                             )))
                             .unwrap();
                         return;
                     }
                 }
 
+                //confirms that creating was successful
                 client
                     .sender
                     .unwrap()
-                    .send(Ok(Message::text("Sucessfully Created & Joined Room")))
+                    .send(Ok(Message::text("RESPONSE CREATE")))
                     .unwrap();
             }
         }
@@ -140,7 +142,7 @@ pub async fn bang_message_handler(id: &str, args: &[&str], clients: &Clients) {
             //get the client that wants to join a room
             let client = clients.read().await.get(id).cloned().unwrap();
 
-            let mut finalstr: String = "".to_string();
+            let mut finalstr: String = "RESPONSE LISTROOMS\n".to_string();
             for room in BANG_ROOMS.read().await.iter() {
                 finalstr.push_str(&format!(
                     "name: {}, id: {}, players: {}\n",
